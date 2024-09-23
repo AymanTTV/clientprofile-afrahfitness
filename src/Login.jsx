@@ -1,87 +1,99 @@
 import React, { useState } from 'react';
-import { TextField, Button, Typography, Paper, Box } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
+import { useNavigate } from 'react-router-dom';
+import { Box, TextField, Button, Typography, Container, CssBaseline, Avatar, Grid, Link } from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 export default function Login() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate();
 
-  axios.post('https://clientprofile.afrahfitness.com/api/login.php', {
-    email,
-    password
-  })
-  .then((response) => {
-    if (response.data.status === 'success') {
-      localStorage.setItem('authToken', response.data.token);
-      localStorage.setItem('email', email);  // Store email here
-      navigate('/reports');
-    } else {
-      setError(response.data.message || 'Invalid email or password');
-    }
-  })
-  .catch((error) => {
-    setError('An error occurred. Please try again.');
-    console.error('Login error:', error);
-  });
-  
+  const handleLogin = (event) => {
+    event.preventDefault();
+
+    axios.post('https://clientprofile.afrahfitness.com/api/auth.php', {
+      email,
+      password
+    })
+    .then((response) => {
+      if (response.data.status === 'success') {
+        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('email', email);
+        navigate('/reports');
+      } else {
+        setError(response.data.message || 'Invalid email or password');
+      }
+    })
+    .catch((error) => {
+      setError('An error occurred. Please try again.');
+      console.error('Login error:', error);
+    });
+  };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        padding: isMobile ? '20px' : '40px'
-      }}
-    >
-      <Paper
-        elevation={3}
+    <Container component="main" maxWidth="xs">
+      <CssBaseline />
+      <Box
         sx={{
-          width: isMobile ? '100%' : '400px',
-          padding: isMobile ? '20px' : '40px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: isMobile ? '15px' : '20px'
+          justifyContent: 'center',
+          minHeight: '100vh', // Full viewport height
+          marginTop: 0,
         }}
       >
-        <Typography variant={isMobile ? 'h5' : 'h4'} component="h1" gutterBottom>
+        <Avatar sx={{ m: 1, bgcolor: 'orange' }}>
+          <LockOutlinedIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5">
           Login
         </Typography>
-        {error && <Typography color="error">{error}</Typography>}
-        <TextField
-          label="Email"
-          variant="outlined"
-          fullWidth
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <TextField
-          label="Password"
-          type="password"
-          variant="outlined"
-          fullWidth
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          onClick={handleLogin}
-          sx={{ padding: isMobile ? '10px' : '15px' }}
-        >
-          Login
-        </Button>
-      </Paper>
-    </Box>
+        <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1 }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {error && <Typography color="error" variant="body2">{error}</Typography>}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+          >
+            Login
+          </Button>
+          <Grid container>
+            <Grid item xs>
+              <Link href="#" variant="body2">
+                Forgot password?
+              </Link>
+            </Grid>
+          </Grid>
+        </Box>
+      </Box>
+    </Container>
   );
 }
